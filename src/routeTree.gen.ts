@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as AdminImport } from './routes/_admin'
 import { Route as AdminIndexImport } from './routes/_admin/index'
+import { Route as AdminSettingImport } from './routes/_admin/setting'
 import { Route as AdminAboutImport } from './routes/_admin/about'
 import { Route as AuthAuthLoginImport } from './routes/_auth/auth/login'
 import { Route as AdminNotesIdImport } from './routes/_admin/notes/$id'
@@ -27,6 +28,12 @@ const AdminRoute = AdminImport.update({
 const AdminIndexRoute = AdminIndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+
+const AdminSettingRoute = AdminSettingImport.update({
+  id: '/setting',
+  path: '/setting',
   getParentRoute: () => AdminRoute,
 } as any)
 
@@ -66,6 +73,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAboutImport
       parentRoute: typeof AdminImport
     }
+    '/_admin/setting': {
+      id: '/_admin/setting'
+      path: '/setting'
+      fullPath: '/setting'
+      preLoaderRoute: typeof AdminSettingImport
+      parentRoute: typeof AdminImport
+    }
     '/_admin/': {
       id: '/_admin/'
       path: '/'
@@ -94,12 +108,14 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAboutRoute: typeof AdminAboutRoute
+  AdminSettingRoute: typeof AdminSettingRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminNotesIdRoute: typeof AdminNotesIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAboutRoute: AdminAboutRoute,
+  AdminSettingRoute: AdminSettingRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminNotesIdRoute: AdminNotesIdRoute,
 }
@@ -109,6 +125,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 export interface FileRoutesByFullPath {
   '': typeof AdminRouteWithChildren
   '/about': typeof AdminAboutRoute
+  '/setting': typeof AdminSettingRoute
   '/': typeof AdminIndexRoute
   '/notes/$id': typeof AdminNotesIdRoute
   '/auth/login': typeof AuthAuthLoginRoute
@@ -116,6 +133,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/about': typeof AdminAboutRoute
+  '/setting': typeof AdminSettingRoute
   '/': typeof AdminIndexRoute
   '/notes/$id': typeof AdminNotesIdRoute
   '/auth/login': typeof AuthAuthLoginRoute
@@ -125,6 +143,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_admin': typeof AdminRouteWithChildren
   '/_admin/about': typeof AdminAboutRoute
+  '/_admin/setting': typeof AdminSettingRoute
   '/_admin/': typeof AdminIndexRoute
   '/_admin/notes/$id': typeof AdminNotesIdRoute
   '/_auth/auth/login': typeof AuthAuthLoginRoute
@@ -132,13 +151,14 @@ export interface FileRoutesById {
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/about' | '/' | '/notes/$id' | '/auth/login'
+  fullPaths: '' | '/about' | '/setting' | '/' | '/notes/$id' | '/auth/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/' | '/notes/$id' | '/auth/login'
+  to: '/about' | '/setting' | '/' | '/notes/$id' | '/auth/login'
   id:
     | '__root__'
     | '/_admin'
     | '/_admin/about'
+    | '/_admin/setting'
     | '/_admin/'
     | '/_admin/notes/$id'
     | '/_auth/auth/login'
@@ -173,12 +193,17 @@ export const routeTree = rootRoute
       "filePath": "_admin.tsx",
       "children": [
         "/_admin/about",
+        "/_admin/setting",
         "/_admin/",
         "/_admin/notes/$id"
       ]
     },
     "/_admin/about": {
       "filePath": "_admin/about.tsx",
+      "parent": "/_admin"
+    },
+    "/_admin/setting": {
+      "filePath": "_admin/setting.tsx",
       "parent": "/_admin"
     },
     "/_admin/": {
