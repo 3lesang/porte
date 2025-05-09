@@ -11,39 +11,80 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as AboutImport } from './routes/about'
-import { Route as IndexImport } from './routes/index'
+import { Route as AdminImport } from './routes/_admin'
+import { Route as AdminIndexImport } from './routes/_admin/index'
+import { Route as AdminAboutImport } from './routes/_admin/about'
+import { Route as AuthAuthLoginImport } from './routes/_auth/auth/login'
+import { Route as AdminNotesIdImport } from './routes/_admin/notes/$id'
 
 // Create/Update Routes
 
-const AboutRoute = AboutImport.update({
-  id: '/about',
-  path: '/about',
+const AdminRoute = AdminImport.update({
+  id: '/_admin',
   getParentRoute: () => rootRoute,
 } as any)
 
-const IndexRoute = IndexImport.update({
+const AdminIndexRoute = AdminIndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+
+const AdminAboutRoute = AdminAboutImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => AdminRoute,
+} as any)
+
+const AuthAuthLoginRoute = AuthAuthLoginImport.update({
+  id: '/_auth/auth/login',
+  path: '/auth/login',
   getParentRoute: () => rootRoute,
+} as any)
+
+const AdminNotesIdRoute = AdminNotesIdImport.update({
+  id: '/notes/$id',
+  path: '/notes/$id',
+  getParentRoute: () => AdminRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
+    '/_admin': {
+      id: '/_admin'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AdminImport
       parentRoute: typeof rootRoute
     }
-    '/about': {
-      id: '/about'
+    '/_admin/about': {
+      id: '/_admin/about'
       path: '/about'
       fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
+      preLoaderRoute: typeof AdminAboutImport
+      parentRoute: typeof AdminImport
+    }
+    '/_admin/': {
+      id: '/_admin/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AdminIndexImport
+      parentRoute: typeof AdminImport
+    }
+    '/_admin/notes/$id': {
+      id: '/_admin/notes/$id'
+      path: '/notes/$id'
+      fullPath: '/notes/$id'
+      preLoaderRoute: typeof AdminNotesIdImport
+      parentRoute: typeof AdminImport
+    }
+    '/_auth/auth/login': {
+      id: '/_auth/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthAuthLoginImport
       parentRoute: typeof rootRoute
     }
   }
@@ -51,39 +92,67 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
+interface AdminRouteChildren {
+  AdminAboutRoute: typeof AdminAboutRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminNotesIdRoute: typeof AdminNotesIdRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAboutRoute: AdminAboutRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminNotesIdRoute: AdminNotesIdRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '': typeof AdminRouteWithChildren
+  '/about': typeof AdminAboutRoute
+  '/': typeof AdminIndexRoute
+  '/notes/$id': typeof AdminNotesIdRoute
+  '/auth/login': typeof AuthAuthLoginRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AdminAboutRoute
+  '/': typeof AdminIndexRoute
+  '/notes/$id': typeof AdminNotesIdRoute
+  '/auth/login': typeof AuthAuthLoginRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/_admin': typeof AdminRouteWithChildren
+  '/_admin/about': typeof AdminAboutRoute
+  '/_admin/': typeof AdminIndexRoute
+  '/_admin/notes/$id': typeof AdminNotesIdRoute
+  '/_auth/auth/login': typeof AuthAuthLoginRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths: '' | '/about' | '/' | '/notes/$id' | '/auth/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to: '/about' | '/' | '/notes/$id' | '/auth/login'
+  id:
+    | '__root__'
+    | '/_admin'
+    | '/_admin/about'
+    | '/_admin/'
+    | '/_admin/notes/$id'
+    | '/_auth/auth/login'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  AuthAuthLoginRoute: typeof AuthAuthLoginRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  AdminRoute: AdminRouteWithChildren,
+  AuthAuthLoginRoute: AuthAuthLoginRoute,
 }
 
 export const routeTree = rootRoute
@@ -96,15 +165,32 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
-        "/about"
+        "/_admin",
+        "/_auth/auth/login"
       ]
     },
-    "/": {
-      "filePath": "index.tsx"
+    "/_admin": {
+      "filePath": "_admin.tsx",
+      "children": [
+        "/_admin/about",
+        "/_admin/",
+        "/_admin/notes/$id"
+      ]
     },
-    "/about": {
-      "filePath": "about.tsx"
+    "/_admin/about": {
+      "filePath": "_admin/about.tsx",
+      "parent": "/_admin"
+    },
+    "/_admin/": {
+      "filePath": "_admin/index.tsx",
+      "parent": "/_admin"
+    },
+    "/_admin/notes/$id": {
+      "filePath": "_admin/notes/$id.tsx",
+      "parent": "/_admin"
+    },
+    "/_auth/auth/login": {
+      "filePath": "_auth/auth/login.tsx"
     }
   }
 }
