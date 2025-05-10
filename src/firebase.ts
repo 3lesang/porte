@@ -5,7 +5,7 @@ import {
   ReCaptchaEnterpriseProvider,
 } from "firebase/app-check";
 import { getAuth } from "firebase/auth";
-import { getDatabase } from "firebase/database";
+import { getDatabase, ref } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDJo8-qoc6Zi37Nz_Jof8hSR40JRPXfpwQ",
@@ -32,3 +32,4 @@ getAnalytics(app);
 
 export const auth = getAuth(app);
 export const database = getDatabase(app);
+export const notesRef = ref(database, "notes/");

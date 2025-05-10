@@ -11,14 +11,27 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as ViewImport } from './routes/_view'
+import { Route as AuthImport } from './routes/_auth'
 import { Route as AdminImport } from './routes/_admin'
 import { Route as AdminIndexImport } from './routes/_admin/index'
 import { Route as AdminSettingImport } from './routes/_admin/setting'
 import { Route as AdminAboutImport } from './routes/_admin/about'
+import { Route as AdminNotesIndexImport } from './routes/_admin/notes/index'
+import { Route as ViewNotesIdImport } from './routes/_view/notes/$id'
 import { Route as AuthAuthLoginImport } from './routes/_auth/auth/login'
-import { Route as AdminNotesIdImport } from './routes/_admin/notes/$id'
 
 // Create/Update Routes
+
+const ViewRoute = ViewImport.update({
+  id: '/_view',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthRoute = AuthImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AdminRoute = AdminImport.update({
   id: '/_admin',
@@ -43,16 +56,22 @@ const AdminAboutRoute = AdminAboutImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 
-const AuthAuthLoginRoute = AuthAuthLoginImport.update({
-  id: '/_auth/auth/login',
-  path: '/auth/login',
-  getParentRoute: () => rootRoute,
+const AdminNotesIndexRoute = AdminNotesIndexImport.update({
+  id: '/notes/',
+  path: '/notes/',
+  getParentRoute: () => AdminRoute,
 } as any)
 
-const AdminNotesIdRoute = AdminNotesIdImport.update({
+const ViewNotesIdRoute = ViewNotesIdImport.update({
   id: '/notes/$id',
   path: '/notes/$id',
-  getParentRoute: () => AdminRoute,
+  getParentRoute: () => ViewRoute,
+} as any)
+
+const AuthAuthLoginRoute = AuthAuthLoginImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => AuthRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -64,6 +83,20 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: ''
       preLoaderRoute: typeof AdminImport
+      parentRoute: typeof rootRoute
+    }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthImport
+      parentRoute: typeof rootRoute
+    }
+    '/_view': {
+      id: '/_view'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof ViewImport
       parentRoute: typeof rootRoute
     }
     '/_admin/about': {
@@ -87,19 +120,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexImport
       parentRoute: typeof AdminImport
     }
-    '/_admin/notes/$id': {
-      id: '/_admin/notes/$id'
-      path: '/notes/$id'
-      fullPath: '/notes/$id'
-      preLoaderRoute: typeof AdminNotesIdImport
-      parentRoute: typeof AdminImport
-    }
     '/_auth/auth/login': {
       id: '/_auth/auth/login'
       path: '/auth/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthAuthLoginImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof AuthImport
+    }
+    '/_view/notes/$id': {
+      id: '/_view/notes/$id'
+      path: '/notes/$id'
+      fullPath: '/notes/$id'
+      preLoaderRoute: typeof ViewNotesIdImport
+      parentRoute: typeof ViewImport
+    }
+    '/_admin/notes/': {
+      id: '/_admin/notes/'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof AdminNotesIndexImport
+      parentRoute: typeof AdminImport
     }
   }
 }
@@ -110,69 +150,107 @@ interface AdminRouteChildren {
   AdminAboutRoute: typeof AdminAboutRoute
   AdminSettingRoute: typeof AdminSettingRoute
   AdminIndexRoute: typeof AdminIndexRoute
-  AdminNotesIdRoute: typeof AdminNotesIdRoute
+  AdminNotesIndexRoute: typeof AdminNotesIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAboutRoute: AdminAboutRoute,
   AdminSettingRoute: AdminSettingRoute,
   AdminIndexRoute: AdminIndexRoute,
-  AdminNotesIdRoute: AdminNotesIdRoute,
+  AdminNotesIndexRoute: AdminNotesIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface AuthRouteChildren {
+  AuthAuthLoginRoute: typeof AuthAuthLoginRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthAuthLoginRoute: AuthAuthLoginRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
+interface ViewRouteChildren {
+  ViewNotesIdRoute: typeof ViewNotesIdRoute
+}
+
+const ViewRouteChildren: ViewRouteChildren = {
+  ViewNotesIdRoute: ViewNotesIdRoute,
+}
+
+const ViewRouteWithChildren = ViewRoute._addFileChildren(ViewRouteChildren)
+
 export interface FileRoutesByFullPath {
-  '': typeof AdminRouteWithChildren
+  '': typeof ViewRouteWithChildren
   '/about': typeof AdminAboutRoute
   '/setting': typeof AdminSettingRoute
   '/': typeof AdminIndexRoute
-  '/notes/$id': typeof AdminNotesIdRoute
   '/auth/login': typeof AuthAuthLoginRoute
+  '/notes/$id': typeof ViewNotesIdRoute
+  '/notes': typeof AdminNotesIndexRoute
 }
 
 export interface FileRoutesByTo {
+  '': typeof ViewRouteWithChildren
   '/about': typeof AdminAboutRoute
   '/setting': typeof AdminSettingRoute
   '/': typeof AdminIndexRoute
-  '/notes/$id': typeof AdminNotesIdRoute
   '/auth/login': typeof AuthAuthLoginRoute
+  '/notes/$id': typeof ViewNotesIdRoute
+  '/notes': typeof AdminNotesIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_admin': typeof AdminRouteWithChildren
+  '/_auth': typeof AuthRouteWithChildren
+  '/_view': typeof ViewRouteWithChildren
   '/_admin/about': typeof AdminAboutRoute
   '/_admin/setting': typeof AdminSettingRoute
   '/_admin/': typeof AdminIndexRoute
-  '/_admin/notes/$id': typeof AdminNotesIdRoute
   '/_auth/auth/login': typeof AuthAuthLoginRoute
+  '/_view/notes/$id': typeof ViewNotesIdRoute
+  '/_admin/notes/': typeof AdminNotesIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/about' | '/setting' | '/' | '/notes/$id' | '/auth/login'
+  fullPaths:
+    | ''
+    | '/about'
+    | '/setting'
+    | '/'
+    | '/auth/login'
+    | '/notes/$id'
+    | '/notes'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/setting' | '/' | '/notes/$id' | '/auth/login'
+  to: '' | '/about' | '/setting' | '/' | '/auth/login' | '/notes/$id' | '/notes'
   id:
     | '__root__'
     | '/_admin'
+    | '/_auth'
+    | '/_view'
     | '/_admin/about'
     | '/_admin/setting'
     | '/_admin/'
-    | '/_admin/notes/$id'
     | '/_auth/auth/login'
+    | '/_view/notes/$id'
+    | '/_admin/notes/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
-  AuthAuthLoginRoute: typeof AuthAuthLoginRoute
+  AuthRoute: typeof AuthRouteWithChildren
+  ViewRoute: typeof ViewRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
-  AuthAuthLoginRoute: AuthAuthLoginRoute,
+  AuthRoute: AuthRouteWithChildren,
+  ViewRoute: ViewRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -186,7 +264,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/_admin",
-        "/_auth/auth/login"
+        "/_auth",
+        "/_view"
       ]
     },
     "/_admin": {
@@ -195,7 +274,19 @@ export const routeTree = rootRoute
         "/_admin/about",
         "/_admin/setting",
         "/_admin/",
-        "/_admin/notes/$id"
+        "/_admin/notes/"
+      ]
+    },
+    "/_auth": {
+      "filePath": "_auth.tsx",
+      "children": [
+        "/_auth/auth/login"
+      ]
+    },
+    "/_view": {
+      "filePath": "_view.tsx",
+      "children": [
+        "/_view/notes/$id"
       ]
     },
     "/_admin/about": {
@@ -210,12 +301,17 @@ export const routeTree = rootRoute
       "filePath": "_admin/index.tsx",
       "parent": "/_admin"
     },
-    "/_admin/notes/$id": {
-      "filePath": "_admin/notes/$id.tsx",
-      "parent": "/_admin"
-    },
     "/_auth/auth/login": {
-      "filePath": "_auth/auth/login.tsx"
+      "filePath": "_auth/auth/login.tsx",
+      "parent": "/_auth"
+    },
+    "/_view/notes/$id": {
+      "filePath": "_view/notes/$id.tsx",
+      "parent": "/_view"
+    },
+    "/_admin/notes/": {
+      "filePath": "_admin/notes/index.tsx",
+      "parent": "/_admin"
     }
   }
 }

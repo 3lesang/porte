@@ -5,16 +5,8 @@ import React from "react";
 export const Route = createRootRoute({
   component: () => (
     <React.Fragment>
-      <main>
-        <Outlet />
-      </main>
       <TanStackRouterDevtools />
-      <footer className="p-2 text-sm text-center">
-        <p className="text-gray-500 hover:text-gray-700">
-          Made with ❤️ by
-          <span className="font-bold text-gray-800"> Porte.</span>
-        </p>
-      </footer>
+      <Outlet />
     </React.Fragment>
   ),
 });
