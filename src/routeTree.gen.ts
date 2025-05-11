@@ -19,6 +19,7 @@ import { Route as AdminSettingImport } from './routes/_admin/setting'
 import { Route as AdminAboutImport } from './routes/_admin/about'
 import { Route as AdminNotesIndexImport } from './routes/_admin/notes/index'
 import { Route as ViewNotesIdImport } from './routes/_view/notes/$id'
+import { Route as AuthAuthSignupImport } from './routes/_auth/auth/signup'
 import { Route as AuthAuthLoginImport } from './routes/_auth/auth/login'
 
 // Create/Update Routes
@@ -66,6 +67,12 @@ const ViewNotesIdRoute = ViewNotesIdImport.update({
   id: '/notes/$id',
   path: '/notes/$id',
   getParentRoute: () => ViewRoute,
+} as any)
+
+const AuthAuthSignupRoute = AuthAuthSignupImport.update({
+  id: '/auth/signup',
+  path: '/auth/signup',
+  getParentRoute: () => AuthRoute,
 } as any)
 
 const AuthAuthLoginRoute = AuthAuthLoginImport.update({
@@ -127,6 +134,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAuthLoginImport
       parentRoute: typeof AuthImport
     }
+    '/_auth/auth/signup': {
+      id: '/_auth/auth/signup'
+      path: '/auth/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthAuthSignupImport
+      parentRoute: typeof AuthImport
+    }
     '/_view/notes/$id': {
       id: '/_view/notes/$id'
       path: '/notes/$id'
@@ -164,10 +178,12 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AuthRouteChildren {
   AuthAuthLoginRoute: typeof AuthAuthLoginRoute
+  AuthAuthSignupRoute: typeof AuthAuthSignupRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthAuthLoginRoute: AuthAuthLoginRoute,
+  AuthAuthSignupRoute: AuthAuthSignupRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
@@ -188,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/setting': typeof AdminSettingRoute
   '/': typeof AdminIndexRoute
   '/auth/login': typeof AuthAuthLoginRoute
+  '/auth/signup': typeof AuthAuthSignupRoute
   '/notes/$id': typeof ViewNotesIdRoute
   '/notes': typeof AdminNotesIndexRoute
 }
@@ -198,6 +215,7 @@ export interface FileRoutesByTo {
   '/setting': typeof AdminSettingRoute
   '/': typeof AdminIndexRoute
   '/auth/login': typeof AuthAuthLoginRoute
+  '/auth/signup': typeof AuthAuthSignupRoute
   '/notes/$id': typeof ViewNotesIdRoute
   '/notes': typeof AdminNotesIndexRoute
 }
@@ -211,6 +229,7 @@ export interface FileRoutesById {
   '/_admin/setting': typeof AdminSettingRoute
   '/_admin/': typeof AdminIndexRoute
   '/_auth/auth/login': typeof AuthAuthLoginRoute
+  '/_auth/auth/signup': typeof AuthAuthSignupRoute
   '/_view/notes/$id': typeof ViewNotesIdRoute
   '/_admin/notes/': typeof AdminNotesIndexRoute
 }
@@ -223,10 +242,19 @@ export interface FileRouteTypes {
     | '/setting'
     | '/'
     | '/auth/login'
+    | '/auth/signup'
     | '/notes/$id'
     | '/notes'
   fileRoutesByTo: FileRoutesByTo
-  to: '' | '/about' | '/setting' | '/' | '/auth/login' | '/notes/$id' | '/notes'
+  to:
+    | ''
+    | '/about'
+    | '/setting'
+    | '/'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/notes/$id'
+    | '/notes'
   id:
     | '__root__'
     | '/_admin'
@@ -236,6 +264,7 @@ export interface FileRouteTypes {
     | '/_admin/setting'
     | '/_admin/'
     | '/_auth/auth/login'
+    | '/_auth/auth/signup'
     | '/_view/notes/$id'
     | '/_admin/notes/'
   fileRoutesById: FileRoutesById
@@ -280,7 +309,8 @@ export const routeTree = rootRoute
     "/_auth": {
       "filePath": "_auth.tsx",
       "children": [
-        "/_auth/auth/login"
+        "/_auth/auth/login",
+        "/_auth/auth/signup"
       ]
     },
     "/_view": {
@@ -303,6 +333,10 @@ export const routeTree = rootRoute
     },
     "/_auth/auth/login": {
       "filePath": "_auth/auth/login.tsx",
+      "parent": "/_auth"
+    },
+    "/_auth/auth/signup": {
+      "filePath": "_auth/auth/signup.tsx",
       "parent": "/_auth"
     },
     "/_view/notes/$id": {
