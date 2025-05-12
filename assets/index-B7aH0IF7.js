@@ -1,0 +1,1 @@
+import{j as e}from"./index-Dnz-mopo.js";const s=function(){return e.jsxs("div",{className:"max-w-2xl mx-auto p-4",children:[e.jsx("h1",{className:"text-2xl font-bold",children:"Admin Page"}),e.jsx("p",{className:"text-gray-600",children:"This is the admin page. You can manage your notes and settings here."})]})};export{s as component};

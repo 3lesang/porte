@@ -1,0 +1,1 @@
+import{j as t}from"./index-Dnz-mopo.js";const n=function(){return t.jsxs("div",{className:"p-4",children:[t.jsx("h1",{className:"text-2xl font-bold max-w-xl mx-auto",children:"Setting"}),t.jsx("p",{className:"text-gray-500 max-w-xl mx-auto",children:"This is the setting page."})]})};export{n as component};
