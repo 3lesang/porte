@@ -20,7 +20,7 @@ import { Route as AdminAboutImport } from './routes/_admin/about'
 import { Route as AdminNotesIndexImport } from './routes/_admin/notes/index'
 import { Route as ViewNotesIdImport } from './routes/_view/notes/$id'
 import { Route as AuthAuthSignupImport } from './routes/_auth/auth/signup'
-import { Route as AuthAuthLoginImport } from './routes/_auth/auth/login'
+import { Route as AuthAuthSigninImport } from './routes/_auth/auth/signin'
 
 // Create/Update Routes
 
@@ -75,9 +75,9 @@ const AuthAuthSignupRoute = AuthAuthSignupImport.update({
   getParentRoute: () => AuthRoute,
 } as any)
 
-const AuthAuthLoginRoute = AuthAuthLoginImport.update({
-  id: '/auth/login',
-  path: '/auth/login',
+const AuthAuthSigninRoute = AuthAuthSigninImport.update({
+  id: '/auth/signin',
+  path: '/auth/signin',
   getParentRoute: () => AuthRoute,
 } as any)
 
@@ -127,11 +127,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexImport
       parentRoute: typeof AdminImport
     }
-    '/_auth/auth/login': {
-      id: '/_auth/auth/login'
-      path: '/auth/login'
-      fullPath: '/auth/login'
-      preLoaderRoute: typeof AuthAuthLoginImport
+    '/_auth/auth/signin': {
+      id: '/_auth/auth/signin'
+      path: '/auth/signin'
+      fullPath: '/auth/signin'
+      preLoaderRoute: typeof AuthAuthSigninImport
       parentRoute: typeof AuthImport
     }
     '/_auth/auth/signup': {
@@ -177,12 +177,12 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AuthRouteChildren {
-  AuthAuthLoginRoute: typeof AuthAuthLoginRoute
+  AuthAuthSigninRoute: typeof AuthAuthSigninRoute
   AuthAuthSignupRoute: typeof AuthAuthSignupRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
-  AuthAuthLoginRoute: AuthAuthLoginRoute,
+  AuthAuthSigninRoute: AuthAuthSigninRoute,
   AuthAuthSignupRoute: AuthAuthSignupRoute,
 }
 
@@ -203,7 +203,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AdminAboutRoute
   '/setting': typeof AdminSettingRoute
   '/': typeof AdminIndexRoute
-  '/auth/login': typeof AuthAuthLoginRoute
+  '/auth/signin': typeof AuthAuthSigninRoute
   '/auth/signup': typeof AuthAuthSignupRoute
   '/notes/$id': typeof ViewNotesIdRoute
   '/notes': typeof AdminNotesIndexRoute
@@ -214,7 +214,7 @@ export interface FileRoutesByTo {
   '/about': typeof AdminAboutRoute
   '/setting': typeof AdminSettingRoute
   '/': typeof AdminIndexRoute
-  '/auth/login': typeof AuthAuthLoginRoute
+  '/auth/signin': typeof AuthAuthSigninRoute
   '/auth/signup': typeof AuthAuthSignupRoute
   '/notes/$id': typeof ViewNotesIdRoute
   '/notes': typeof AdminNotesIndexRoute
@@ -228,7 +228,7 @@ export interface FileRoutesById {
   '/_admin/about': typeof AdminAboutRoute
   '/_admin/setting': typeof AdminSettingRoute
   '/_admin/': typeof AdminIndexRoute
-  '/_auth/auth/login': typeof AuthAuthLoginRoute
+  '/_auth/auth/signin': typeof AuthAuthSigninRoute
   '/_auth/auth/signup': typeof AuthAuthSignupRoute
   '/_view/notes/$id': typeof ViewNotesIdRoute
   '/_admin/notes/': typeof AdminNotesIndexRoute
@@ -241,7 +241,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/setting'
     | '/'
-    | '/auth/login'
+    | '/auth/signin'
     | '/auth/signup'
     | '/notes/$id'
     | '/notes'
@@ -251,7 +251,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/setting'
     | '/'
-    | '/auth/login'
+    | '/auth/signin'
     | '/auth/signup'
     | '/notes/$id'
     | '/notes'
@@ -263,7 +263,7 @@ export interface FileRouteTypes {
     | '/_admin/about'
     | '/_admin/setting'
     | '/_admin/'
-    | '/_auth/auth/login'
+    | '/_auth/auth/signin'
     | '/_auth/auth/signup'
     | '/_view/notes/$id'
     | '/_admin/notes/'
@@ -309,7 +309,7 @@ export const routeTree = rootRoute
     "/_auth": {
       "filePath": "_auth.tsx",
       "children": [
-        "/_auth/auth/login",
+        "/_auth/auth/signin",
         "/_auth/auth/signup"
       ]
     },
@@ -331,8 +331,8 @@ export const routeTree = rootRoute
       "filePath": "_admin/index.tsx",
       "parent": "/_admin"
     },
-    "/_auth/auth/login": {
-      "filePath": "_auth/auth/login.tsx",
+    "/_auth/auth/signin": {
+      "filePath": "_auth/auth/signin.tsx",
       "parent": "/_auth"
     },
     "/_auth/auth/signup": {

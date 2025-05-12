@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -14,14 +13,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { auth } from "@/firebase";
-import {
-  browserLocalPersistence,
-  setPersistence,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
 
-const formSchema = z.object({
+const schema = z.object({
   email: z.string().min(2, {
     message: "Email is required",
   }),
@@ -30,26 +23,31 @@ const formSchema = z.object({
   }),
 });
 
-function LoginForm() {
-  const navigate = useNavigate();
+export type SignInFormType = z.infer<typeof schema>;
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+interface ISignInForm {
+  onSubmit?: (values: SignInFormType) => void;
+}
+
+function SignInForm({ onSubmit }: ISignInForm) {
+  const form = useForm<SignInFormType>({
+    resolver: zodResolver(schema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setPersistence(auth, browserLocalPersistence);
-    signInWithEmailAndPassword(auth, values.email, values.password);
-    navigate({ to: "/" });
+  function handleSubmit(values: SignInFormType) {
+    onSubmit?.(values);
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-4 w-full"
+      >
         <FormField
           control={form.control}
           name="email"
@@ -79,12 +77,12 @@ function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" size="sm" className="w-full">
-          Log In
+        <Button type="submit" className="w-full">
+          Sign In
         </Button>
       </form>
     </Form>
   );
 }
 
-export default LoginForm;
+export default SignInForm;

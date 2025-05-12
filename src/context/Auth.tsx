@@ -1,18 +1,38 @@
 import { auth } from "@/firebase";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
-const AuthContext = createContext<{ user: User | null }>({ user: null });
+type AuthDialogType = "signin" | "signup";
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+interface AuthContextType {
+  user: User | null;
+  dialog?: AuthDialogType;
+  openDialog?: (dialog?: AuthDialogType) => void;
+}
+
+const AuthContext = createContext<AuthContextType>({ user: null });
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [dialog, setDialog] = useState<AuthDialogType | undefined>(undefined);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, setUser);
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return unsubscribe;
   }, []);
 
+  const openDialog = (dialog?: AuthDialogType) => setDialog(dialog);
+
   return (
-    <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, dialog, openDialog }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 

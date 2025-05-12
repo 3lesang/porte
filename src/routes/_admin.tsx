@@ -1,5 +1,14 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import SignInForm, { type SignInFormType } from "@/components/form/SignInForm";
+import SignUpForm from "@/components/form/SignUpForm";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,44 +17,148 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/context/Auth";
 import { auth } from "@/firebase";
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import {
-  createFileRoute,
-  Link,
-  Outlet,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router";
-import { onAuthStateChanged, type User } from "firebase/auth";
+  browserLocalPersistence,
+  setPersistence,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { ChevronDown, UserCircle } from "lucide-react";
 
-function waitForAuth(): Promise<User | null> {
-  return new Promise((resolve) => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      unsubscribe();
-      resolve(user);
-    });
-  });
+function SignInDialog() {
+  const { dialog, openDialog } = useAuth();
+  const handleChange = (open: boolean) => {
+    if (!open) {
+      openDialog?.(undefined);
+    }
+  };
+
+  const handleSubmit = async (values: SignInFormType) => {
+    setPersistence(auth, browserLocalPersistence);
+    await signInWithEmailAndPassword(auth, values.email, values.password);
+    openDialog?.(undefined);
+  };
+
+  return (
+    <Dialog open={dialog == "signin"} onOpenChange={handleChange}>
+      <DialogContent className="w-sm">
+        <DialogHeader>
+          <DialogTitle>Sign In</DialogTitle>
+          <DialogDescription>
+            Sign in to your account to continue.
+          </DialogDescription>
+        </DialogHeader>
+        <SignInForm onSubmit={handleSubmit} />
+        <DialogFooter className="sm:justify-start">
+          <p className="text-sm text-gray-500">
+            Don't have an account?
+            <Button
+              variant="link"
+              className="px-1"
+              onClick={() => openDialog?.("signup")}
+            >
+              Sign Up
+            </Button>
+          </p>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SignUpDialog() {
+  const { dialog, openDialog } = useAuth();
+  const handleChange = (open: boolean) => {
+    if (!open) {
+      openDialog?.(undefined);
+    }
+  };
+
+  const handleSubmit = () => {
+    openDialog?.(undefined);
+  };
+
+  return (
+    <Dialog open={dialog == "signup"} onOpenChange={handleChange}>
+      <DialogContent className="w-sm">
+        <DialogHeader>
+          <DialogTitle>Sign Up</DialogTitle>
+          <DialogDescription>
+            Create an account to get started.
+          </DialogDescription>
+        </DialogHeader>
+        <SignUpForm onSubmit={handleSubmit} />
+        <DialogFooter className="sm:justify-start">
+          <p className="text-sm text-gray-500">
+            Already have an account?
+            <Button
+              variant="link"
+              className="px-1"
+              onClick={() => openDialog?.("signin")}
+            >
+              Sign In
+            </Button>
+          </p>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function UserMenu() {
+  const { user } = useAuth();
+  const handleLogout = () => {
+    auth.signOut();
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <Button size="sm" variant="secondary">
+          <UserCircle />
+          <p>{user?.email?.split("@")[0]}@</p>
+          <ChevronDown />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>Profile</DropdownMenuItem>
+        <DropdownMenuItem>Settings</DropdownMenuItem>
+        <DropdownMenuItem>Help</DropdownMenuItem>
+        <DropdownMenuItem>Feedback</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="text-red-500 hover:text-red-700"
+          onClick={handleLogout}
+        >
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function AuthButton() {
+  const { openDialog } = useAuth();
+  const handleClick = () => {
+    openDialog?.("signin");
+  };
+  return (
+    <Button size="sm" onClick={handleClick}>
+      Sign In
+    </Button>
+  );
 }
 
 export const Route = createFileRoute("/_admin")({
-  loader: async () => {
-    const user = await waitForAuth();
-    if (!user) {
-      throw redirect({ to: "/auth/login" });
-    }
-  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const user = auth.currentUser;
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    auth.signOut();
-    navigate({ to: "/auth/login" });
-  };
-
+  const { user } = useAuth();
   return (
     <div className="flex flex-col min-h-screen">
       <header className="sticky top-0 p-1 flex items-center gap-2 bg-[#f0f0f0]">
@@ -63,45 +176,13 @@ function RouteComponent() {
             Setting
           </Link>
         </nav>
-        <div className="ml-auto">
-          {user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Help</DropdownMenuItem>
-                <DropdownMenuItem>Feedback</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-500 hover:text-red-700"
-                  onClick={handleLogout}
-                >
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          {!user && (
-            <Link
-              to="/auth/login"
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              <Button size="sm">Log in</Button>
-            </Link>
-          )}
-        </div>
+        <div className="ml-auto">{user ? <UserMenu /> : <AuthButton />}</div>
       </header>
       <main className="flex-1 px-4">
         <Outlet />
       </main>
+      <SignInDialog />
+      <SignUpDialog />
       <footer className="p-2 text-sm text-center">
         <p className="text-gray-500 hover:text-gray-700">
           Made with ❤️ by
