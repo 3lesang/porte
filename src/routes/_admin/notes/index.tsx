@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import ContentSection from "@/components/content-section";
 import NoteForm from "@/components/form/NoteForm";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,6 +57,7 @@ function RouteComponent() {
       title: string;
       content?: string | undefined;
       slug: string;
+      author?: string;
     }) => {
       return pb.collection(noteCollectionId).create(payload);
     },
@@ -114,6 +116,7 @@ function RouteComponent() {
       title: data.title,
       slug: genSlug(data.title),
       content: data.content,
+      author: pb.authStore.record?.id,
     });
   };
 
@@ -141,77 +144,79 @@ function RouteComponent() {
   };
 
   return (
-    <div className="w-full max-w-2xl h-full flex flex-col gap-2 mx-auto">
-      <h1 className="text-2xl font-bold">Notes</h1>
-      <p className="text-sm text-gray-500">
-        You can add notes to your notes. You can add a title and content.
-      </p>
-      <div className="flex items-center gap-2 justify-end w-full">
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" onClick={handleAddNote}>
-              Take a Note
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Notes</DialogTitle>
-              <DialogDescription>
-                Add a note to your notes. You can add a title and content.
-                <br />
-                <span className="text-xs italic text-gray-500">
-                  Note: The title will be used as the slug for the note.
-                </span>
-              </DialogDescription>
-            </DialogHeader>
-            <NoteForm
-              actionText={action === "add" ? "Add Note" : "Update Note"}
-              onSubmit={handleSubmit}
-              defaultValues={defaultValues}
-            />
-          </DialogContent>
-        </Dialog>
+    <ContentSection
+      title="Notes"
+      desc="You can add notes to your notes. You can add a title and content."
+    >
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center gap-2 justify-end w-full">
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" onClick={handleAddNote}>
+                Take a Note
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Notes</DialogTitle>
+                <DialogDescription>
+                  Add a note to your notes. You can add a title and content.
+                  <br />
+                  <span className="text-xs italic text-gray-500">
+                    Note: The title will be used as the slug for the note.
+                  </span>
+                </DialogDescription>
+              </DialogHeader>
+              <NoteForm
+                actionText={action === "add" ? "Add Note" : "Update Note"}
+                onSubmit={handleSubmit}
+                defaultValues={defaultValues}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+        <div className="mt-2" />
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+          {data?.map((item) => (
+            <ContextMenu key={item.id}>
+              <ContextMenuTrigger>
+                <Card
+                  className="bg-slate-100 relative group cursor-pointer"
+                  onClick={() =>
+                    handleEditClick({
+                      id: item.id,
+                      title: item.title,
+                      content: item.content || "",
+                    })
+                  }
+                >
+                  <CardHeader>
+                    <CardTitle className="line-clamp-1">{item.title}</CardTitle>
+                    <CardDescription>
+                      {new Date(item.created).toLocaleString()}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="line-clamp-2 h-12">
+                    {item.content}
+                  </CardContent>
+                </Card>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <a
+                  href={`/notes/${item.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ContextMenuItem>View</ContextMenuItem>
+                </a>
+                <ContextMenuItem onClick={() => handleDelete(item.id)}>
+                  <p className="text-red-500">Delete</p>
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
+          ))}
+        </div>
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-        {data?.map((item) => (
-          <ContextMenu key={item.id}>
-            <ContextMenuTrigger>
-              <Card
-                className="bg-slate-100 relative group cursor-pointer"
-                onClick={() =>
-                  handleEditClick({
-                    id: item.id,
-                    title: item.title,
-                    content: item.content || "",
-                  })
-                }
-              >
-                <CardHeader>
-                  <CardTitle className="line-clamp-1">{item.title}</CardTitle>
-                  <CardDescription>
-                    {new Date(item.created).toLocaleString()}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="line-clamp-2 h-12">
-                  {item.content}
-                </CardContent>
-              </Card>
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-              <a
-                href={`/notes/${item.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ContextMenuItem>View</ContextMenuItem>
-              </a>
-              <ContextMenuItem onClick={() => handleDelete(item.id)}>
-                <p className="text-red-500">Delete</p>
-              </ContextMenuItem>
-            </ContextMenuContent>
-          </ContextMenu>
-        ))}
-      </div>
-    </div>
+    </ContentSection>
   );
 }

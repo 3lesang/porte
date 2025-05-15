@@ -156,6 +156,16 @@ export const Route = createFileRoute("/_admin")({
 
 function RouteComponent() {
   const { logged } = useAuth();
+  const items = [
+    {
+      href: "/notes",
+      title: "Notes",
+    },
+    {
+      href: "/setting",
+      title: "Setting",
+    },
+  ];
   return (
     <div className="flex flex-col min-h-screen">
       <header className="sticky top-0 p-1 flex items-center gap-2 bg-[#f0f0f0]">
@@ -163,15 +173,15 @@ function RouteComponent() {
           <Link to="/" className="font-bold text-lg">
             Porte.
           </Link>
-          <Link to="/notes" className="[&.active]:font-bold">
-            Notes
-          </Link>
-          <Link to="/about" className="[&.active]:font-bold">
-            About
-          </Link>
-          <Link to="/setting" className="[&.active]:font-bold">
-            Setting
-          </Link>
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              className="[&.active]:font-bold"
+            >
+              {item.title}
+            </Link>
+          ))}
         </nav>
         <div className="ml-auto">{logged ? <UserMenu /> : <AuthButton />}</div>
       </header>
@@ -180,12 +190,6 @@ function RouteComponent() {
       </main>
       <SignInDialog />
       <SignUpDialog />
-      <footer className="p-2 text-sm text-center">
-        <p className="text-gray-500 hover:text-gray-700">
-          Made with ❤️ by
-          <span className="font-bold text-gray-800"> Porte.</span>
-        </p>
-      </footer>
     </div>
   );
 }

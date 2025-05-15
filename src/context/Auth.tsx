@@ -1,4 +1,5 @@
 import { pb } from "@/pb";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   useContext,
@@ -20,10 +21,12 @@ const AuthContext = createContext<AuthContextType>({});
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [logged, setLogged] = useState(pb.authStore.isValid);
   const [dialog, setDialog] = useState<AuthDialogType | undefined>(undefined);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const unsubscribe = pb.authStore.onChange(() => {
       setLogged(pb.authStore.isValid);
+      queryClient.invalidateQueries();
     });
 
     return unsubscribe;

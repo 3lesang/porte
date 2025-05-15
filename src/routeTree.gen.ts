@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
@@ -15,12 +17,18 @@ import { Route as ViewImport } from './routes/_view'
 import { Route as AuthImport } from './routes/_auth'
 import { Route as AdminImport } from './routes/_admin'
 import { Route as AdminIndexImport } from './routes/_admin/index'
-import { Route as AdminSettingImport } from './routes/_admin/setting'
 import { Route as AdminAboutImport } from './routes/_admin/about'
 import { Route as AdminNotesIndexImport } from './routes/_admin/notes/index'
 import { Route as ViewNotesIdImport } from './routes/_view/notes/$id'
 import { Route as AuthAuthSignupImport } from './routes/_auth/auth/signup'
 import { Route as AuthAuthSigninImport } from './routes/_auth/auth/signin'
+import { Route as AdminSettingSettingImport } from './routes/_admin/setting/_setting'
+import { Route as AdminSettingSettingIndexImport } from './routes/_admin/setting/_setting/index'
+import { Route as AdminSettingSettingAboutImport } from './routes/_admin/setting/_setting/about'
+
+// Create Virtual Routes
+
+const AdminSettingImport = createFileRoute('/_admin/setting')()
 
 // Create/Update Routes
 
@@ -39,15 +47,15 @@ const AdminRoute = AdminImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AdminIndexRoute = AdminIndexImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRoute,
-} as any)
-
 const AdminSettingRoute = AdminSettingImport.update({
   id: '/setting',
   path: '/setting',
+  getParentRoute: () => AdminRoute,
+} as any)
+
+const AdminIndexRoute = AdminIndexImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
 
@@ -79,6 +87,23 @@ const AuthAuthSigninRoute = AuthAuthSigninImport.update({
   id: '/auth/signin',
   path: '/auth/signin',
   getParentRoute: () => AuthRoute,
+} as any)
+
+const AdminSettingSettingRoute = AdminSettingSettingImport.update({
+  id: '/_setting',
+  getParentRoute: () => AdminSettingRoute,
+} as any)
+
+const AdminSettingSettingIndexRoute = AdminSettingSettingIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminSettingSettingRoute,
+} as any)
+
+const AdminSettingSettingAboutRoute = AdminSettingSettingAboutImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => AdminSettingSettingRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -113,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAboutImport
       parentRoute: typeof AdminImport
     }
+    '/_admin/': {
+      id: '/_admin/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AdminIndexImport
+      parentRoute: typeof AdminImport
+    }
     '/_admin/setting': {
       id: '/_admin/setting'
       path: '/setting'
@@ -120,12 +152,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingImport
       parentRoute: typeof AdminImport
     }
-    '/_admin/': {
-      id: '/_admin/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AdminIndexImport
-      parentRoute: typeof AdminImport
+    '/_admin/setting/_setting': {
+      id: '/_admin/setting/_setting'
+      path: '/setting'
+      fullPath: '/setting'
+      preLoaderRoute: typeof AdminSettingSettingImport
+      parentRoute: typeof AdminSettingRoute
     }
     '/_auth/auth/signin': {
       id: '/_auth/auth/signin'
@@ -155,22 +187,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNotesIndexImport
       parentRoute: typeof AdminImport
     }
+    '/_admin/setting/_setting/about': {
+      id: '/_admin/setting/_setting/about'
+      path: '/about'
+      fullPath: '/setting/about'
+      preLoaderRoute: typeof AdminSettingSettingAboutImport
+      parentRoute: typeof AdminSettingSettingImport
+    }
+    '/_admin/setting/_setting/': {
+      id: '/_admin/setting/_setting/'
+      path: '/'
+      fullPath: '/setting/'
+      preLoaderRoute: typeof AdminSettingSettingIndexImport
+      parentRoute: typeof AdminSettingSettingImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface AdminSettingSettingRouteChildren {
+  AdminSettingSettingAboutRoute: typeof AdminSettingSettingAboutRoute
+  AdminSettingSettingIndexRoute: typeof AdminSettingSettingIndexRoute
+}
+
+const AdminSettingSettingRouteChildren: AdminSettingSettingRouteChildren = {
+  AdminSettingSettingAboutRoute: AdminSettingSettingAboutRoute,
+  AdminSettingSettingIndexRoute: AdminSettingSettingIndexRoute,
+}
+
+const AdminSettingSettingRouteWithChildren =
+  AdminSettingSettingRoute._addFileChildren(AdminSettingSettingRouteChildren)
+
+interface AdminSettingRouteChildren {
+  AdminSettingSettingRoute: typeof AdminSettingSettingRouteWithChildren
+}
+
+const AdminSettingRouteChildren: AdminSettingRouteChildren = {
+  AdminSettingSettingRoute: AdminSettingSettingRouteWithChildren,
+}
+
+const AdminSettingRouteWithChildren = AdminSettingRoute._addFileChildren(
+  AdminSettingRouteChildren,
+)
+
 interface AdminRouteChildren {
   AdminAboutRoute: typeof AdminAboutRoute
-  AdminSettingRoute: typeof AdminSettingRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminSettingRoute: typeof AdminSettingRouteWithChildren
   AdminNotesIndexRoute: typeof AdminNotesIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAboutRoute: AdminAboutRoute,
-  AdminSettingRoute: AdminSettingRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminSettingRoute: AdminSettingRouteWithChildren,
   AdminNotesIndexRoute: AdminNotesIndexRoute,
 }
 
@@ -201,23 +272,26 @@ const ViewRouteWithChildren = ViewRoute._addFileChildren(ViewRouteChildren)
 export interface FileRoutesByFullPath {
   '': typeof ViewRouteWithChildren
   '/about': typeof AdminAboutRoute
-  '/setting': typeof AdminSettingRoute
   '/': typeof AdminIndexRoute
+  '/setting': typeof AdminSettingSettingRouteWithChildren
   '/auth/signin': typeof AuthAuthSigninRoute
   '/auth/signup': typeof AuthAuthSignupRoute
   '/notes/$id': typeof ViewNotesIdRoute
   '/notes': typeof AdminNotesIndexRoute
+  '/setting/about': typeof AdminSettingSettingAboutRoute
+  '/setting/': typeof AdminSettingSettingIndexRoute
 }
 
 export interface FileRoutesByTo {
   '': typeof ViewRouteWithChildren
   '/about': typeof AdminAboutRoute
-  '/setting': typeof AdminSettingRoute
   '/': typeof AdminIndexRoute
+  '/setting': typeof AdminSettingSettingIndexRoute
   '/auth/signin': typeof AuthAuthSigninRoute
   '/auth/signup': typeof AuthAuthSignupRoute
   '/notes/$id': typeof ViewNotesIdRoute
   '/notes': typeof AdminNotesIndexRoute
+  '/setting/about': typeof AdminSettingSettingAboutRoute
 }
 
 export interface FileRoutesById {
@@ -226,12 +300,15 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/_view': typeof ViewRouteWithChildren
   '/_admin/about': typeof AdminAboutRoute
-  '/_admin/setting': typeof AdminSettingRoute
   '/_admin/': typeof AdminIndexRoute
+  '/_admin/setting': typeof AdminSettingRouteWithChildren
+  '/_admin/setting/_setting': typeof AdminSettingSettingRouteWithChildren
   '/_auth/auth/signin': typeof AuthAuthSigninRoute
   '/_auth/auth/signup': typeof AuthAuthSignupRoute
   '/_view/notes/$id': typeof ViewNotesIdRoute
   '/_admin/notes/': typeof AdminNotesIndexRoute
+  '/_admin/setting/_setting/about': typeof AdminSettingSettingAboutRoute
+  '/_admin/setting/_setting/': typeof AdminSettingSettingIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -239,34 +316,40 @@ export interface FileRouteTypes {
   fullPaths:
     | ''
     | '/about'
-    | '/setting'
     | '/'
+    | '/setting'
     | '/auth/signin'
     | '/auth/signup'
     | '/notes/$id'
     | '/notes'
+    | '/setting/about'
+    | '/setting/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
     | '/about'
-    | '/setting'
     | '/'
+    | '/setting'
     | '/auth/signin'
     | '/auth/signup'
     | '/notes/$id'
     | '/notes'
+    | '/setting/about'
   id:
     | '__root__'
     | '/_admin'
     | '/_auth'
     | '/_view'
     | '/_admin/about'
-    | '/_admin/setting'
     | '/_admin/'
+    | '/_admin/setting'
+    | '/_admin/setting/_setting'
     | '/_auth/auth/signin'
     | '/_auth/auth/signup'
     | '/_view/notes/$id'
     | '/_admin/notes/'
+    | '/_admin/setting/_setting/about'
+    | '/_admin/setting/_setting/'
   fileRoutesById: FileRoutesById
 }
 
@@ -301,8 +384,8 @@ export const routeTree = rootRoute
       "filePath": "_admin.tsx",
       "children": [
         "/_admin/about",
-        "/_admin/setting",
         "/_admin/",
+        "/_admin/setting",
         "/_admin/notes/"
       ]
     },
@@ -323,13 +406,24 @@ export const routeTree = rootRoute
       "filePath": "_admin/about.tsx",
       "parent": "/_admin"
     },
-    "/_admin/setting": {
-      "filePath": "_admin/setting.tsx",
-      "parent": "/_admin"
-    },
     "/_admin/": {
       "filePath": "_admin/index.tsx",
       "parent": "/_admin"
+    },
+    "/_admin/setting": {
+      "filePath": "_admin/setting",
+      "parent": "/_admin",
+      "children": [
+        "/_admin/setting/_setting"
+      ]
+    },
+    "/_admin/setting/_setting": {
+      "filePath": "_admin/setting/_setting.tsx",
+      "parent": "/_admin/setting",
+      "children": [
+        "/_admin/setting/_setting/about",
+        "/_admin/setting/_setting/"
+      ]
     },
     "/_auth/auth/signin": {
       "filePath": "_auth/auth/signin.tsx",
@@ -346,6 +440,14 @@ export const routeTree = rootRoute
     "/_admin/notes/": {
       "filePath": "_admin/notes/index.tsx",
       "parent": "/_admin"
+    },
+    "/_admin/setting/_setting/about": {
+      "filePath": "_admin/setting/_setting/about.tsx",
+      "parent": "/_admin/setting/_setting"
+    },
+    "/_admin/setting/_setting/": {
+      "filePath": "_admin/setting/_setting/index.tsx",
+      "parent": "/_admin/setting/_setting"
     }
   }
 }
