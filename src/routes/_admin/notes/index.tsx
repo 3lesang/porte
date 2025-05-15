@@ -23,11 +23,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { database, notesRef } from "@/firebase";
 import { genSlug } from "@/lib/utils";
+import { noteCollectionId, pb } from "@/pb";
 import type { Note } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { get, push, ref, remove, update } from "firebase/database";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_admin/notes/")({
@@ -43,26 +42,22 @@ function RouteComponent() {
     content: "",
   });
 
-  const { data, refetch } = useQuery<Record<string, Note>>({
-    queryKey: ["notes"],
+  const { data, refetch } = useQuery<Note[]>({
+    queryKey: [noteCollectionId],
     queryFn: async () => {
-      const snapshot = await get(notesRef);
-      return snapshot.val();
+      return pb
+        .collection(noteCollectionId)
+        .getFullList({ fields: "id,title,slug,content,created" });
     },
   });
 
   const { mutate: addMutate } = useMutation({
-    mutationFn: async (data: {
+    mutationFn: async (payload: {
       title: string;
       content?: string | undefined;
+      slug: string;
     }) => {
-      const payload = {
-        title: data.title,
-        slug: genSlug(data.title),
-        content: data.content,
-        createdAt: Date.now(),
-      };
-      return await push(notesRef, payload);
+      return pb.collection(noteCollectionId).create(payload);
     },
     onSuccess: () => {
       setOpen(false);
@@ -73,16 +68,13 @@ function RouteComponent() {
   const { mutate: editMutate } = useMutation({
     mutationFn: async (data: {
       id: string;
-      title: string;
-      content?: string | undefined;
-    }) => {
-      const payload = {
-        title: data.title,
-        slug: genSlug(data.title),
-        content: data.content,
-        createdAt: Date.now(),
+      payload: {
+        title: string;
+        content?: string | undefined;
+        slug: string;
       };
-      return await update(ref(database, `notes/${data.id}`), payload);
+    }) => {
+      return pb.collection(noteCollectionId).update(data.id, data.payload);
     },
     onSuccess: () => {
       setOpen(false);
@@ -91,17 +83,8 @@ function RouteComponent() {
   });
 
   const { mutate: deleteMutate } = useMutation({
-    mutationFn: async (id: string) => {
-      return await remove(ref(database, `notes/${id}`));
-    },
-    onSuccess: () => {
-      refetch();
-    },
-  });
-
-  const { mutate: deleteAllMutate } = useMutation({
-    mutationFn: async () => {
-      return await remove(notesRef);
+    mutationFn: async (documentId: string) => {
+      return pb.collection(noteCollectionId).delete(documentId);
     },
     onSuccess: () => {
       refetch();
@@ -112,10 +95,6 @@ function RouteComponent() {
     deleteMutate(id);
   };
 
-  const handleDeleteAll = () => {
-    deleteAllMutate();
-  };
-
   const handleSubmit = (data: {
     title: string;
     content?: string | undefined;
@@ -123,12 +102,19 @@ function RouteComponent() {
     if (action === "edit") {
       editMutate({
         id: noteId,
-        title: data.title,
-        content: data.content,
+        payload: {
+          title: data.title,
+          slug: genSlug(data.title),
+          content: data.content,
+        },
       });
       return;
     }
-    addMutate(data);
+    addMutate({
+      title: data.title,
+      slug: genSlug(data.title),
+      content: data.content,
+    });
   };
 
   const handleEditClick = (data: {
@@ -161,9 +147,6 @@ function RouteComponent() {
         You can add notes to your notes. You can add a title and content.
       </p>
       <div className="flex items-center gap-2 justify-end w-full">
-        <Button variant="ghost" size="sm" onClick={handleDeleteAll}>
-          Delete All
-        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button size="sm" onClick={handleAddNote}>
@@ -190,47 +173,44 @@ function RouteComponent() {
         </Dialog>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-        {data &&
-          Object.entries(data).map(([key, value]) => (
-            <ContextMenu key={key}>
-              <ContextMenuTrigger>
-                <Card
-                  className="bg-slate-100 relative group cursor-pointer"
-                  onClick={() =>
-                    handleEditClick({
-                      id: key,
-                      title: value.title,
-                      content: value.content || "",
-                    })
-                  }
-                >
-                  <CardHeader>
-                    <CardTitle className="line-clamp-1">
-                      {value.title}
-                    </CardTitle>
-                    <CardDescription>
-                      {new Date(value.createdAt).toLocaleString()}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="line-clamp-2 h-12">
-                    {value.content}
-                  </CardContent>
-                </Card>
-              </ContextMenuTrigger>
-              <ContextMenuContent>
-                <ContextMenuItem onClick={() => handleDelete(key)}>
-                  Delete
-                </ContextMenuItem>
-                <a
-                  href={`/notes/${value.slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ContextMenuItem>View</ContextMenuItem>
-                </a>
-              </ContextMenuContent>
-            </ContextMenu>
-          ))}
+        {data?.map((item) => (
+          <ContextMenu key={item.id}>
+            <ContextMenuTrigger>
+              <Card
+                className="bg-slate-100 relative group cursor-pointer"
+                onClick={() =>
+                  handleEditClick({
+                    id: item.id,
+                    title: item.title,
+                    content: item.content || "",
+                  })
+                }
+              >
+                <CardHeader>
+                  <CardTitle className="line-clamp-1">{item.title}</CardTitle>
+                  <CardDescription>
+                    {new Date(item.created).toLocaleString()}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="line-clamp-2 h-12">
+                  {item.content}
+                </CardContent>
+              </Card>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <a
+                href={`/notes/${item.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ContextMenuItem>View</ContextMenuItem>
+              </a>
+              <ContextMenuItem onClick={() => handleDelete(item.id)}>
+                <p className="text-red-500">Delete</p>
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+        ))}
       </div>
     </div>
   );

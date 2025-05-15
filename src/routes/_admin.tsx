@@ -18,13 +18,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/Auth";
-import { auth } from "@/firebase";
+import { pb, userCollectionId } from "@/pb";
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import {
-  browserLocalPersistence,
-  setPersistence,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
 import { ChevronDown, UserCircle } from "lucide-react";
 
 function SignInDialog() {
@@ -36,8 +31,10 @@ function SignInDialog() {
   };
 
   const handleSubmit = async (values: SignInFormType) => {
-    setPersistence(auth, browserLocalPersistence);
-    await signInWithEmailAndPassword(auth, values.email, values.password);
+    pb.collection(userCollectionId).authWithPassword(
+      values.email,
+      values.password
+    );
     openDialog?.(undefined);
   };
 
@@ -108,17 +105,17 @@ function SignUpDialog() {
 }
 
 function UserMenu() {
-  const { user } = useAuth();
+  const user = pb.authStore.record;
   const handleLogout = () => {
-    auth.signOut();
+    pb.authStore.clear();
   };
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <Button size="sm" variant="secondary">
           <UserCircle />
-          <p>{user?.email?.split("@")[0]}@</p>
+          <p>{user?.name}</p>
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
@@ -158,7 +155,7 @@ export const Route = createFileRoute("/_admin")({
 });
 
 function RouteComponent() {
-  const { user } = useAuth();
+  const { logged } = useAuth();
   return (
     <div className="flex flex-col min-h-screen">
       <header className="sticky top-0 p-1 flex items-center gap-2 bg-[#f0f0f0]">
@@ -176,7 +173,7 @@ function RouteComponent() {
             Setting
           </Link>
         </nav>
-        <div className="ml-auto">{user ? <UserMenu /> : <AuthButton />}</div>
+        <div className="ml-auto">{logged ? <UserMenu /> : <AuthButton />}</div>
       </header>
       <main className="flex-1 px-4">
         <Outlet />

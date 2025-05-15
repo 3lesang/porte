@@ -1,5 +1,4 @@
-import { auth } from "@/firebase";
-import { onAuthStateChanged, type User } from "firebase/auth";
+import { pb } from "@/pb";
 import {
   createContext,
   useContext,
@@ -11,26 +10,29 @@ import {
 type AuthDialogType = "signin" | "signup";
 
 interface AuthContextType {
-  user: User | null;
+  logged?: Boolean;
   dialog?: AuthDialogType;
   openDialog?: (dialog?: AuthDialogType) => void;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null });
+const AuthContext = createContext<AuthContextType>({});
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [logged, setLogged] = useState(pb.authStore.isValid);
   const [dialog, setDialog] = useState<AuthDialogType | undefined>(undefined);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, setUser);
+    const unsubscribe = pb.authStore.onChange(() => {
+      setLogged(pb.authStore.isValid);
+    });
+
     return unsubscribe;
   }, []);
 
   const openDialog = (dialog?: AuthDialogType) => setDialog(dialog);
 
   return (
-    <AuthContext.Provider value={{ user, dialog, openDialog }}>
+    <AuthContext.Provider value={{ logged, dialog, openDialog }}>
       {children}
     </AuthContext.Provider>
   );

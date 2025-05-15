@@ -4,7 +4,6 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { AuthProvider } from "./context/Auth";
-import "./firebase";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
 
