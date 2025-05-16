@@ -18,6 +18,7 @@ import { Route as AuthImport } from './routes/_auth'
 import { Route as AdminImport } from './routes/_admin'
 import { Route as AdminIndexImport } from './routes/_admin/index'
 import { Route as AdminAboutImport } from './routes/_admin/about'
+import { Route as AdminPostsIndexImport } from './routes/_admin/posts/index'
 import { Route as AdminNotesIndexImport } from './routes/_admin/notes/index'
 import { Route as ViewNotesIdImport } from './routes/_view/notes/$id'
 import { Route as AuthAuthSignupImport } from './routes/_auth/auth/signup'
@@ -62,6 +63,12 @@ const AdminIndexRoute = AdminIndexImport.update({
 const AdminAboutRoute = AdminAboutImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => AdminRoute,
+} as any)
+
+const AdminPostsIndexRoute = AdminPostsIndexImport.update({
+  id: '/posts/',
+  path: '/posts/',
   getParentRoute: () => AdminRoute,
 } as any)
 
@@ -187,6 +194,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNotesIndexImport
       parentRoute: typeof AdminImport
     }
+    '/_admin/posts/': {
+      id: '/_admin/posts/'
+      path: '/posts'
+      fullPath: '/posts'
+      preLoaderRoute: typeof AdminPostsIndexImport
+      parentRoute: typeof AdminImport
+    }
     '/_admin/setting/_setting/about': {
       id: '/_admin/setting/_setting/about'
       path: '/about'
@@ -236,6 +250,7 @@ interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminSettingRoute: typeof AdminSettingRouteWithChildren
   AdminNotesIndexRoute: typeof AdminNotesIndexRoute
+  AdminPostsIndexRoute: typeof AdminPostsIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -243,6 +258,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminSettingRoute: AdminSettingRouteWithChildren,
   AdminNotesIndexRoute: AdminNotesIndexRoute,
+  AdminPostsIndexRoute: AdminPostsIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -278,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/auth/signup': typeof AuthAuthSignupRoute
   '/notes/$id': typeof ViewNotesIdRoute
   '/notes': typeof AdminNotesIndexRoute
+  '/posts': typeof AdminPostsIndexRoute
   '/setting/about': typeof AdminSettingSettingAboutRoute
   '/setting/': typeof AdminSettingSettingIndexRoute
 }
@@ -291,6 +308,7 @@ export interface FileRoutesByTo {
   '/auth/signup': typeof AuthAuthSignupRoute
   '/notes/$id': typeof ViewNotesIdRoute
   '/notes': typeof AdminNotesIndexRoute
+  '/posts': typeof AdminPostsIndexRoute
   '/setting/about': typeof AdminSettingSettingAboutRoute
 }
 
@@ -307,6 +325,7 @@ export interface FileRoutesById {
   '/_auth/auth/signup': typeof AuthAuthSignupRoute
   '/_view/notes/$id': typeof ViewNotesIdRoute
   '/_admin/notes/': typeof AdminNotesIndexRoute
+  '/_admin/posts/': typeof AdminPostsIndexRoute
   '/_admin/setting/_setting/about': typeof AdminSettingSettingAboutRoute
   '/_admin/setting/_setting/': typeof AdminSettingSettingIndexRoute
 }
@@ -322,6 +341,7 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/notes/$id'
     | '/notes'
+    | '/posts'
     | '/setting/about'
     | '/setting/'
   fileRoutesByTo: FileRoutesByTo
@@ -334,6 +354,7 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/notes/$id'
     | '/notes'
+    | '/posts'
     | '/setting/about'
   id:
     | '__root__'
@@ -348,6 +369,7 @@ export interface FileRouteTypes {
     | '/_auth/auth/signup'
     | '/_view/notes/$id'
     | '/_admin/notes/'
+    | '/_admin/posts/'
     | '/_admin/setting/_setting/about'
     | '/_admin/setting/_setting/'
   fileRoutesById: FileRoutesById
@@ -386,7 +408,8 @@ export const routeTree = rootRoute
         "/_admin/about",
         "/_admin/",
         "/_admin/setting",
-        "/_admin/notes/"
+        "/_admin/notes/",
+        "/_admin/posts/"
       ]
     },
     "/_auth": {
@@ -439,6 +462,10 @@ export const routeTree = rootRoute
     },
     "/_admin/notes/": {
       "filePath": "_admin/notes/index.tsx",
+      "parent": "/_admin"
+    },
+    "/_admin/posts/": {
+      "filePath": "_admin/posts/index.tsx",
       "parent": "/_admin"
     },
     "/_admin/setting/_setting/about": {

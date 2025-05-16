@@ -123,7 +123,9 @@ function UserMenu() {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Profile</DropdownMenuItem>
-        <DropdownMenuItem>Settings</DropdownMenuItem>
+        <Link to="/setting">
+          <DropdownMenuItem>Settings</DropdownMenuItem>
+        </Link>
         <DropdownMenuItem>Help</DropdownMenuItem>
         <DropdownMenuItem>Feedback</DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -162,8 +164,8 @@ function RouteComponent() {
       title: "Notes",
     },
     {
-      href: "/setting",
-      title: "Setting",
+      href: "/posts",
+      title: "Post",
     },
   ];
   return (
